@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from io import StringIO, SEEK_END
+from io import StringIO, SEEK_END, SEEK_CUR
 from math import prod  # don't need to do our own reduce
 
 if __name__ == "__main__":
@@ -55,28 +55,24 @@ if __name__ == "__main__":
             
             length_of_operator = len(operator_string)
             operator = operator_string[0]
-            # each of these strings is a char longer than it needs to be but we never seek that far
-            operand1str = operand1fp.read(length_of_operator)
-            operand2str = operand2fp.read(length_of_operator)
-            operand3str = operand3fp.read(length_of_operator)
-            operand4str = operand4fp.read(length_of_operator)
             
             operands = []
 
-            # convert to vertical strings piecewise
-            with StringIO(operand1str, newline="") as hoperand1fp, \
-                    StringIO(operand2str, newline="") as hoperand2fp, \
-                    StringIO(operand3str, newline="") as hoperand3fp, \
-                    StringIO(operand4str, newline="") as hoperand4fp:
-                for _ in range(length_of_operator - 1):
-                    with StringIO(newline="") as this_operand_fp:
-                        this_operand_fp.write(hoperand1fp.read(1))
-                        this_operand_fp.write(hoperand2fp.read(1))
-                        this_operand_fp.write(hoperand3fp.read(1))
-                        this_operand_fp.write(hoperand4fp.read(1))
-                        # done
-                        operands.append(int(this_operand_fp.getvalue().strip()))
-            
+            # convert to vertical strings piecewise; do len - 1 to exclude delimiting whitespace and seek 1 after SEEK_CUR
+            for _ in range(length_of_operator - 1):
+                with StringIO(newline="") as this_operand_fp:
+                    this_operand_fp.write(operand1fp.read(1))
+                    this_operand_fp.write(operand2fp.read(1))
+                    this_operand_fp.write(operand3fp.read(1))
+                    this_operand_fp.write(operand4fp.read(1))
+                    # done
+                    operands.append(int(this_operand_fp.getvalue().strip()))
+            # SEEK_CUR doesn't actually work on strings! because UTF-16 support; just read a char instead
+            operand1fp.read(1)  # operand1fp.seek(1, SEEK_CUR)
+            operand2fp.read(1)  # operand2fp.seek(1, SEEK_CUR)
+            operand3fp.read(1)  # operand3fp.seek(1, SEEK_CUR)
+            operand4fp.read(1)  # operand4fp.seek(1, SEEK_CUR)
+
             match operator:
                 case "+":
                     accumulator += sum(operands)
