@@ -9,12 +9,12 @@ from scipy.spatial import KDTree
 import numpy as np
 
 KDTREE_SEARCH_ITERATION_STEP: float = 0.5
-NUM_CONNECTIONS_TO_MAKE = 10
+NUM_CONNECTIONS_TO_MAKE = 1000
 
 if __name__ == "__main__":
     # probably a better way to search for this with a dict or set but it gets messy
     circuits: list[frozenset[tuple[int, int, int]]] = []
-    with open("./example", "tr") as input_fp:
+    with open("./input", "tr") as input_fp:
         # have to use an array of tuples because tuples are hashable. numpy and scipy should be able to flatten them
         # would have preferred to use a set but ordering is important for the scipy KDTree; it only returns indexes and not nodes with .query
         breakers = tuple(
@@ -58,7 +58,7 @@ if __name__ == "__main__":
                     already_processed_pairs |= new_pairs
                     break
                 case _:
-                    print(f"got more than one at once at {long_dist-substep}+{substep}, refining search...")  # TODO: DEBUG
+                    # print(f"got more than one at once at {long_dist-substep}+{substep}, refining search...")  # TODO: DEBUG
                     long_dist -= substep
                     substep /= 2
                     continue
@@ -76,20 +76,17 @@ if __name__ == "__main__":
             if circuit1 is not None and circuit2 is not None:
                 break
 
-        print("circuit1", circuit1)
-        print("circuit2", circuit2)
-
         if circuit1 == circuit2:
             # already in the same circuit. need to retry.
-            print("already in the same circuit, moving on!")
+            # print("already in the same circuit, moving on!")  # TODO: DEBUG
+            # NOTE: ok, this one escaped me for a long while. the prompt expects you to count these cases where nothing happens as a "link", but the wording is ambiguous about what happens in those cases
+            i += 1  # MUST increment here
             continue
 
-        print(f"connecting {breaker1} and {breaker2}")
         new_circuit = circuit1 | circuit2
         circuits.remove(circuit1)
         circuits.remove(circuit2)
         circuits.append(new_circuit)
-        print(f"new circuit", new_circuit)
         # would be better with j pointers but python is iffy
         i += 1  # a connection has been made between two circuits; go on
     unique_circuits = frozenset(circuits)
