@@ -40,8 +40,10 @@ if __name__ == "__main__":
             red_tiles.append(red_tile)
     # initialize visualization
     t = Turtle()
+    t.speed(0)
     ts = t.getscreen()
     ts.bgcolor("gray")
+    ts.tracer(0)
     max_dimension = max(chain.from_iterable(red_tiles))
     ts.setworldcoordinates(0, max_dimension, max_dimension, 0)
     t.hideturtle()
@@ -61,6 +63,7 @@ if __name__ == "__main__":
                 t.dot(3, "red")
             t.goto(*red_tiles[0])
     t.penup()
+    ts.update()
     green_tile_polygon: Sequence[tuple[float, float]] = t.get_poly()
 
     # ok, now we have the base polygon drawn
@@ -103,8 +106,9 @@ if __name__ == "__main__":
             break
     else:
         raise RuntimeError("Didn't find a polygon that fit inside!")
+    ts.update()
 
     # show screen until a quit
     # I commented it out just so I could do a time test
-    # ts.mainloop()
+    ts.mainloop()
 
